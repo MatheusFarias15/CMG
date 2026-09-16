@@ -1,0 +1,1 @@
+# CMG — Central de Monitoramento & Gestão de Facilities
