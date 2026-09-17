@@ -10,33 +10,86 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedAtividadesRouteImport } from './routes/_authenticated/atividades'
+import { Route as AuthenticatedDistribuirRouteImport } from './routes/_authenticated/distribuir'
+import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
+import { Route as AuthenticatedAtividadesActivityIdRouteImport } from './routes/_authenticated/atividades/$activityId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAtividadesRoute = AuthenticatedAtividadesRouteImport.update({
+  id: '/atividades',
+  path: '/atividades',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDistribuirRoute = AuthenticatedDistribuirRouteImport.update({
+  id: '/distribuir',
+  path: '/distribuir',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAtividadesActivityIdRoute =
+  AuthenticatedAtividadesActivityIdRouteImport.update({
+    id: '/$activityId',
+    path: '/$activityId',
+    getParentRoute: () => AuthenticatedAtividadesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/atividades': typeof AuthenticatedAtividadesRouteWithChildren
+  '/distribuir': typeof AuthenticatedDistribuirRoute
+  '/painel': typeof AuthenticatedPainelRoute
+  '/atividades/$activityId': typeof AuthenticatedAtividadesActivityIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/atividades': typeof AuthenticatedAtividadesRouteWithChildren
+  '/distribuir': typeof AuthenticatedDistribuirRoute
+  '/painel': typeof AuthenticatedPainelRoute
+  '/atividades/$activityId': typeof AuthenticatedAtividadesActivityIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/atividades': typeof AuthenticatedAtividadesRouteWithChildren
+  '/_authenticated/distribuir': typeof AuthenticatedDistribuirRoute
+  '/_authenticated/painel': typeof AuthenticatedPainelRoute
+  '/_authenticated/atividades/$activityId': typeof AuthenticatedAtividadesActivityIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/atividades' | '/distribuir' | '/painel' | '/atividades/$activityId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    '/' | '/atividades' | '/distribuir' | '/painel' | '/atividades/$activityId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/atividades'
+    | '/_authenticated/distribuir'
+    | '/_authenticated/painel'
+    | '/_authenticated/atividades/$activityId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +101,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/atividades': {
+      id: '/_authenticated/atividades'
+      path: '/atividades'
+      fullPath: '/atividades'
+      preLoaderRoute: typeof AuthenticatedAtividadesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/distribuir': {
+      id: '/_authenticated/distribuir'
+      path: '/distribuir'
+      fullPath: '/distribuir'
+      preLoaderRoute: typeof AuthenticatedDistribuirRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/painel': {
+      id: '/_authenticated/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof AuthenticatedPainelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/atividades/$activityId': {
+      id: '/_authenticated/atividades/$activityId'
+      path: '/$activityId'
+      fullPath: '/atividades/$activityId'
+      preLoaderRoute: typeof AuthenticatedAtividadesActivityIdRouteImport
+      parentRoute: typeof AuthenticatedAtividadesRoute
+    }
   }
 }
 
+interface AuthenticatedAtividadesRouteChildren {
+  AuthenticatedAtividadesActivityIdRoute: typeof AuthenticatedAtividadesActivityIdRoute
+}
+
+const AuthenticatedAtividadesRouteChildren: AuthenticatedAtividadesRouteChildren =
+  {
+    AuthenticatedAtividadesActivityIdRoute:
+      AuthenticatedAtividadesActivityIdRoute,
+  }
+
+const AuthenticatedAtividadesRouteWithChildren =
+  AuthenticatedAtividadesRoute._addFileChildren(
+    AuthenticatedAtividadesRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAtividadesRoute: typeof AuthenticatedAtividadesRouteWithChildren
+  AuthenticatedDistribuirRoute: typeof AuthenticatedDistribuirRoute
+  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAtividadesRoute: AuthenticatedAtividadesRouteWithChildren,
+  AuthenticatedDistribuirRoute: AuthenticatedDistribuirRoute,
+  AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

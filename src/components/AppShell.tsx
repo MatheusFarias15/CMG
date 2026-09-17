@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { SessionState } from "@/hooks/useSession";
 
-type NavItem = { to: string; label: string };
+type NavItem = { to: "/painel" | "/distribuir" | "/atividades"; label: string };
 
 const NAV: Record<"gestao" | "analista", NavItem[]> = {
   gestao: [
