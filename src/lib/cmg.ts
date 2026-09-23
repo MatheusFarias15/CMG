@@ -12,9 +12,13 @@ export const TYPES = {
 } as const;
 
 export const STATUS = {
+  pendente: "Pendente",
   em_andamento: "Em andamento",
+  pausada: "Pausada",
   concluida: "Concluída",
 } as const;
+
+export const STATUS_ORDER = ["pendente", "em_andamento", "pausada", "concluida"] as const;
 
 export type AreaKey = keyof typeof AREAS;
 export type TypeKey = keyof typeof TYPES;

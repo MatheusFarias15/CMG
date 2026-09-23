@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION private.protect_activity_assignment_fields() FROM authenticated, anon, service_role, PUBLIC;

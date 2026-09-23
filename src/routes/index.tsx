@@ -2,14 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Building2, KeyRound, Loader2, ShieldCheck } from "lucide-react";
+import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { emailForCompanyId, ensureMasterUser, recoverPassword, signUpAnalyst } from "@/lib/auth.functions";
+import { emailForCompanyId, recoverPassword } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -45,14 +45,8 @@ function validatePassword(password: string) {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const bootstrap = useServerFn(ensureMasterUser);
-  const register = useServerFn(signUpAnalyst);
   const recover = useServerFn(recoverPassword);
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    void bootstrap({}).catch(() => undefined);
-  }, [bootstrap]);
 
   const goToApp = async () => {
     const { data } = await supabase.auth.getUser();
@@ -89,39 +83,6 @@ function AuthPage() {
       return;
     }
     await goToApp();
-  };
-
-  const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const password = String(form.get("password") ?? "");
-    const companyId = String(form.get("companyId") ?? "").trim();
-    if (!validatePassword(password)) {
-      toast.error(PASSWORD_RULE);
-      return;
-    }
-    setBusy(true);
-    try {
-      await register({
-        data: {
-          fullName: String(form.get("fullName") ?? ""),
-          birthDate: String(form.get("birthDate") ?? ""),
-          companyId,
-          password,
-        },
-      });
-      const { error } = await supabase.auth.signInWithPassword({
-        email: emailForCompanyId(companyId),
-        password,
-      });
-      if (error) throw new Error(error.message);
-      toast.success("Cadastro concluído");
-      await navigate({ to: "/atividades" });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível cadastrar");
-    } finally {
-      setBusy(false);
-    }
   };
 
   const handleRecover = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -192,9 +153,8 @@ function AuthPage() {
       <section className="flex items-center justify-center px-4 py-10 sm:px-8">
         <div className="panel w-full max-w-md p-5 sm:p-7">
           <Tabs defaultValue="login">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
               <TabsTrigger value="recover">Recuperar</TabsTrigger>
             </TabsList>
 
@@ -221,36 +181,6 @@ function AuthPage() {
                 <Button type="submit" disabled={busy} className="mt-2">
                   {busy ? <Loader2 className="size-4 animate-spin" /> : <KeyRound className="size-4" />}
                   Entrar
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup" className="mt-6">
-              <h2 className="text-xl font-semibold">Cadastro de analista</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Liberação imediata, sem aprovação de gestor.
-              </p>
-              <form className="mt-6 grid gap-4" onSubmit={handleSignUp}>
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-name">Nome completo</Label>
-                  <Input id="signup-name" name="fullName" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-birth">Data de nascimento</Label>
-                  <Input id="signup-birth" name="birthDate" type="date" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-id">ID da empresa</Label>
-                  <Input id="signup-id" name="companyId" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-password">Senha</Label>
-                  <Input id="signup-password" name="password" type="password" required />
-                  <p className="text-xs text-muted-foreground">{PASSWORD_RULE}</p>
-                </div>
-                <Button type="submit" disabled={busy}>
-                  {busy ? <Loader2 className="size-4 animate-spin" /> : <Building2 className="size-4" />}
-                  Criar cadastro
                 </Button>
               </form>
             </TabsContent>

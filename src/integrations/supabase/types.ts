@@ -158,7 +158,7 @@ export type Database = {
         | "eletrica"
         | "manutencao_predial"
         | "operacao_sistemas"
-      activity_status: "em_andamento" | "concluida"
+      activity_status: "em_andamento" | "concluida" | "pendente" | "pausada"
       activity_type: "ronda_pavimentos" | "ajuste_vag" | "manutencao_preventiva"
       app_role: "gestao" | "analista"
     }
@@ -294,7 +294,7 @@ export const Constants = {
         "manutencao_predial",
         "operacao_sistemas",
       ],
-      activity_status: ["em_andamento", "concluida"],
+      activity_status: ["em_andamento", "concluida", "pendente", "pausada"],
       activity_type: [
         "ronda_pavimentos",
         "ajuste_vag",

@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
-import { AREAS, FORM_FIELDS, PHOTO_MAX_BYTES, PHOTO_TYPES, TYPES, formatDate, type Activity, type ActivityPhoto } from "@/lib/cmg";
+import { AREAS, FORM_FIELDS, PHOTO_MAX_BYTES, PHOTO_TYPES, STATUS, STATUS_ORDER, TYPES, formatDate, type Activity, type ActivityPhoto, type StatusKey } from "@/lib/cmg";
 import { buildActivityReport, type ReportPhoto } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/atividades/$activityId")({
@@ -72,19 +73,30 @@ function ActivityDetailPage() {
 
   const readonly = activity.status === "concluida";
 
-  const save = async (complete = false) => {
-    if (complete) {
+  const save = async () => {
+    setBusy(true);
+    const { error } = await supabase.from("activities").update({ form_data: formData }).eq("id", activity.id);
+    setBusy(false);
+    if (error) { toast.error("Não foi possível salvar o registro"); return; }
+    toast.success("Registro salvo");
+    await load();
+  };
+
+  const changeStatus = async (status: StatusKey) => {
+    if (status === activity.status) return;
+    if (status === "concluida") {
       const missing = FORM_FIELDS[activity.activity_type].find((field) => !formData[field.key]?.trim());
       if (missing) { toast.error(`Preencha o campo: ${missing.label}`); return; }
     }
     setBusy(true);
     const { error } = await supabase.from("activities").update({
       form_data: formData,
-      ...(complete ? { status: "concluida" as const, completed_at: new Date().toISOString() } : {}),
+      status,
+      completed_at: status === "concluida" ? new Date().toISOString() : null,
     }).eq("id", activity.id);
     setBusy(false);
-    if (error) { toast.error("Não foi possível salvar a atividade"); return; }
-    toast.success(complete ? "Atividade concluída e relatório liberado" : "Registro salvo");
+    if (error) { toast.error("Não foi possível atualizar o status da atividade"); return; }
+    toast.success(status === "concluida" ? "Atividade concluída e relatório liberado" : `Status alterado para ${STATUS[status].toLocaleLowerCase("pt-BR")}`);
     await load();
   };
 
@@ -116,10 +128,28 @@ function ActivityDetailPage() {
   return (
     <AppShell session={session} title={activity.title} subtitle={`${TYPES[activity.activity_type]} · ${AREAS[activity.area]}`}>
       <div className="mb-5 flex flex-wrap items-center gap-2 text-sm">
-        <Badge variant={readonly ? "secondary" : "default"}>{readonly ? "Concluída" : "Em andamento"}</Badge>
+        <Badge variant={readonly ? "secondary" : "default"}>{STATUS[activity.status]}</Badge>
         <span className="text-muted-foreground">Programada para {formatDate(activity.scheduled_date)}</span>
         {activity.location ? <span className="flex items-center gap-1 text-muted-foreground"><MapPin className="size-3.5" /> {activity.location}</span> : null}
       </div>
+
+      <section className="panel mb-5 grid gap-4 p-5 sm:grid-cols-[1fr_18rem] sm:items-center">
+        <div>
+          <h2 className="font-semibold">Status da atividade</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Atualize a etapa conforme o andamento do serviço.</p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="activity-status">Situação atual</Label>
+          <Select value={activity.status} onValueChange={(value) => void changeStatus(value as StatusKey)} disabled={busy}>
+            <SelectTrigger id="activity-status" className="h-11" aria-label="Situação atual da atividade">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_ORDER.map((status) => <SelectItem key={status} value={status}>{STATUS[status]}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
 
       {activity.description ? <section className="panel mb-5 p-5"><h2 className="font-semibold">Escopo delegado</h2><p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{activity.description}</p></section> : null}
 
@@ -156,7 +186,7 @@ function ActivityDetailPage() {
       </section>
 
       <div className="sticky bottom-0 mt-6 flex flex-wrap justify-end gap-2 border-t bg-background/95 py-4 backdrop-blur">
-        {!readonly ? <><Button variant="outline" onClick={() => void save(false)} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />} Salvar</Button><Button onClick={() => void save(true)} disabled={busy}><CheckCircle2 className="size-4" /> Concluir atividade</Button></> : <Button onClick={() => void report()} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />} Gerar relatório PDF</Button>}
+        {!readonly ? <><Button variant="outline" onClick={() => void save()} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />} Salvar</Button><Button onClick={() => void changeStatus("concluida")} disabled={busy}><CheckCircle2 className="size-4" /> Concluir atividade</Button></> : <Button onClick={() => void report()} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />} Gerar relatório PDF</Button>}
       </div>
     </AppShell>
   );

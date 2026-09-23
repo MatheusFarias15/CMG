@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { SessionState } from "@/hooks/useSession";
 
-type NavItem = { to: "/painel" | "/distribuir" | "/atividades"; label: string };
+type NavItem = { to: "/painel" | "/distribuir" | "/atividades" | "/usuarios"; label: string };
 
 const NAV: Record<"gestao" | "analista", NavItem[]> = {
   gestao: [
     { to: "/painel", label: "Dashboard" },
     { to: "/distribuir", label: "Distribuir atividades" },
-    { to: "/atividades", label: "Minhas atividades" },
+    { to: "/usuarios", label: "Gestão de usuários" },
+    { to: "/atividades", label: "Atividades" },
   ],
   analista: [{ to: "/atividades", label: "Atividades delegadas" }],
 };

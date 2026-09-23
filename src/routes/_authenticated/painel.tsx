@@ -72,9 +72,10 @@ function DashboardPage() {
 
   return (
     <AppShell session={session} title="Dashboard da equipe" subtitle="Indicadores atualizados automaticamente pela execução em campo.">
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={<ListChecks />} label="Total de atividades" value={rows.length} />
-        <Metric icon={<Timer />} label="Em andamento" value={rows.length - completed} />
+        <Metric icon={<Timer />} label="Pendentes" value={rows.filter((row) => row.status === "pendente").length} />
+        <Metric icon={<Timer />} label="Em execução" value={rows.filter((row) => row.status === "em_andamento" || row.status === "pausada").length} />
         <Metric icon={<UserRoundCheck />} label="Concluídas" value={completed} />
       </section>
 
