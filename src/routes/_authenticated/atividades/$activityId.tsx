@@ -135,7 +135,8 @@ function ActivityDetailPage() {
 
       <section className="panel mb-5 grid gap-4 p-5 sm:grid-cols-[1fr_18rem] sm:items-center">
         <div>
-          <h2 className="font-semibold">Status da atividade</h2>
+          <Badge variant="outline" className="mb-3">Atualização da atividade</Badge>
+          <h2 className="text-lg font-semibold">Status da atividade</h2>
           <p className="mt-1 text-sm text-muted-foreground">Atualize a etapa conforme o andamento do serviço.</p>
         </div>
         <div className="grid gap-2">
